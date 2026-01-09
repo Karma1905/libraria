@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// NAVIGATION 
+model Navigation {
+  id            Int       @id @default(autoincrement())
+  title         String
+  slug          String    @unique
+  lastScrapedAt DateTime?
+
+  categories    Category[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// CATEGORY (HIERARCHY)
+model Category {
+  id            Int        @id @default(autoincrement())
+  title         String
+  slug          String
+  productCount  Int?
+  lastScrapedAt DateTime?
+
+  navigationId  Int
+  navigation    Navigation @relation(fields: [navigationId], references: [id])
+
+  parentId      Int?
+  parent        Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children      Category[] @relation("CategoryTree")
+
+  products      Product[]
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@unique([navigationId, slug])
+}
+
+// PRODUCT 
+model Product {
+  id            Int           @id @default(autoincrement())
+  sourceId      String        @unique
+  title         String
+  author        String?
+  price         Float?
+  currency      String?
+  imageUrl      String?
+  sourceUrl     String        @unique
+  lastScrapedAt DateTime?
+
+  categoryId    Int
+  category      Category      @relation(fields: [categoryId], references: [id])
+
+  detail        ProductDetail?
+  reviews       Review[]
+  
+  // Added relation for ViewHistory persistence 
+  viewHistory   ViewHistory[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+// PRODUCT DETAIL
+model ProductDetail {
+  id            Int           @id @default(autoincrement())
+  description   String?
+  specs         Json?
+  ratingsAvg    Float?
+  reviewsCount  Int?
+
+  productId     Int           @unique
+  product       Product       @relation(fields: [productId], references: [id])
+
+  lastScrapedAt DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+// REVIEW
+model Review {
+  id         Int      @id @default(autoincrement())
+  author     String?
+  rating     Int?
+  text       String?
+  createdAt  DateTime @default(now())
+
+  productId  Int
+  product    Product  @relation(fields: [productId], references: [id])
+}
+
+// SCRAPE JOB
+model ScrapeJob {
+  id         Int       @id @default(autoincrement())
+  targetUrl  String
+  targetType String
+  status     String
+  errorLog   String?
+
+  startedAt  DateTime?
+  finishedAt DateTime?
+
+  createdAt  DateTime  @default(now())
+}
+
+// VIEW HISTORY (UPDATED)
+model ViewHistory {
+  id        Int      @id @default(autoincrement())
+  sessionId String   @map("session_id")
+  pathJson  Json     @map("path_json")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Required relationship for Requirement 21 & 65 
+  productId Int      @map("product_id")
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@map("view_history")
+}
