@@ -1,3 +1,6 @@
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, BookOpen, Sparkles, TrendingUp, History } from 'lucide-react';
@@ -19,8 +22,10 @@ const Index = () => {
   const { data: historyProducts, isLoading: historyLoading } = useQuery({
     queryKey: ['view-history'],
     queryFn: async () => {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${API_URL}/products/history?limit=4`)
+      const response = await fetch(
+        `${API_BASE_URL}/products/history?limit=4`
+     );
+
       if (!response.ok) return [];
       return response.json();
     },
