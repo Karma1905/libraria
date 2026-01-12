@@ -37,7 +37,7 @@ const Index = () => {
   const { data: featuredProducts, isLoading: productsLoading } = useQuery({
     queryKey: ['featured-products'],
     queryFn: async () => {
-      const response = await fetch('http://localhost:3001/products');
+      const response = await fetch(`${API_BASE_URL}/products`);
       if (!response.ok) throw new Error('Backend route not found (404)');
       return response.json();
     },
