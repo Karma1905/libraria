@@ -19,7 +19,8 @@ const Index = () => {
   const { data: historyProducts, isLoading: historyLoading } = useQuery({
     queryKey: ['view-history'],
     queryFn: async () => {
-      const response = await fetch('http://localhost:3001/products/history?limit=4');
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_URL}/products/history?limit=4`)
       if (!response.ok) return [];
       return response.json();
     },

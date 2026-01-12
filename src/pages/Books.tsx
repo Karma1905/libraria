@@ -21,7 +21,7 @@ const Books = () => {
   });
 
   
-  const products = Array.isArray(data) ? data : [];
+  const products = data?.items ?? [];
 
   return (
     <Layout>
